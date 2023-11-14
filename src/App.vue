@@ -6,7 +6,7 @@
 
 <script>
 export default  {
- 'App',
+  name: 'App',
     metaInfo() {
         return {
             title: 管理系统,

@@ -7,15 +7,15 @@
         <el-row>
           <el-button @click="navTo('kpiemployee',$event)">返回</el-button>
         </el-row>
-        <el-table :data="tableData" @selection-change="handleSelectionChange">
+        <el-table :data="tableData">
           <el-table-column prop="id" label="员工编号"></el-table-column>
           <el-table-column prop="dept" label="所在部门"></el-table-column>
           <el-table-column prop="name" label="员工姓名"></el-table-column>
           <el-table-column prop="position" label="员工职位"></el-table-column>
-          <el-table-column prop="reviewer" label="评价人">
+          <el-table-column prop="leader" label="评价人">
             <template slot-scope="scope">
-              <span v-show="!scope.row.edit">{{scope.row.reviewer}}</span>
-              <el-input v-show="scope.row.edit" v-model="scope.row.reviewer"></el-input>
+              <span v-show="!scope.row.edit">{{scope.row.leader}}</span>
+              <el-input v-show="scope.row.edit" v-model="scope.row.leader"></el-input>
             </template>
           </el-table-column>
           <el-table-column prop="kpi" label="当年KPI">
@@ -24,13 +24,13 @@
               <el-input v-show="scope.row.edit" v-model="scope.row.kpi"></el-input>
             </template>
           </el-table-column>
-          <el-table-column prop="review" label="评价意见">
+          <el-table-column prop="comments" label="评价意见">
             <template slot-scope="scope">
-              <span v-show="!scope.row.edit">{{scope.row.review}}</span>
-              <el-input v-show="scope.row.edit" v-model="scope.row.review"></el-input>
+              <span v-show="!scope.row.edit">{{scope.row.comments}}</span>
+              <el-input v-show="scope.row.edit" v-model="scope.row.comments"></el-input>
             </template>
           </el-table-column>
-          <el-table-column prop="time" label="评价时间"></el-table-column>
+          <el-table-column prop="checkDate" label="评价时间"></el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
               <el-button type="primary" @click="saveDep(scope.row)" v-show="scope.row.edit">确认考核</el-button>
@@ -43,47 +43,31 @@
 </template>
 
 <script>
+import axios from "axios"
 export default {
   name: "Home",
   data() {
-    return {"tableData": [
-      {
-        "id": this.$route.query.id,
-        "dept": this.$route.query.dept,
-        "name": this.$route.query.name,
-        "position": this.$route.query.position,
-        "kpi": "12323",
-        "reviewer": "王哥",
-        "review": "我觉得行",
-        "time": "1992-09-09",
-        "edit": false
-      },
-      {
-        "id": this.$route.query.id,
-        "dept": this.$route.query.dept,
-        "name": this.$route.query.name,
-        "position": this.$route.query.position,
-        "kpi": "12323",
-        "reviewer": "王哥",
-        "review": "我觉得行",
-        "time": "1992-09-09",
-        "edit": false
-      },
-      {
-        "id": this.$route.query.id,
-        "dept": this.$route.query.dept,
-        "name": this.$route.query.name,
-        "position": this.$route.query.position,
-        "kpi": "12323",
-        "reviewer": "王哥",
-        "review": "我觉得行",
-        "time": "1992-09-09",
-        "edit": false
-      }]
+    return {"tableData": []
     }
   },
-  beforeMount() {
-   this.addDep()
+  mounted() {
+    axios.defaults.baseURL = "http://localhost:9090/api/employeeKPI";
+    const prevalue = {          
+      "id": this.$route.query.id,
+      "dept": this.$route.query.dept,
+      "name": this.$route.query.name,
+      "position": this.$route.query.position,
+      "edit": false};
+    axios.get("/"+this.$route.query.id).then(res => {
+      if (res.status == 200) {
+        let dept = res.data;
+        dept.forEach(e => {
+          Object.assign(e, prevalue);
+        });
+        this.tableData = dept;
+        this.addDep();
+      }
+    });
   },
   methods: {
       navTo(routeName) {
@@ -96,13 +80,14 @@ export default {
           "name": this.$route.query.name,
           "position": this.$route.query.position,
           "kpi": "",
-          "reviewer": this.$route.query.manager,
-          "review": "",
+          "leader": this.$route.query.manager,
+          "comments": "",
           "edit": true
         });
       },
       saveDep(row) {
         row.edit = false;
+        axios.post("/" + this.$route.query.id, row);
       }
   }
 }

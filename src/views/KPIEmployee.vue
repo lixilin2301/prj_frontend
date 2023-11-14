@@ -33,40 +33,24 @@
 </template>
 
 <script>
+import axios from "axios"
 export default {
   name: "Home",
   data() {
-    return {"tableData": [
-      {
-        "id": "1",
-        "dept": "研发部门",
-        "name": "李哥",
-        "position": "开发",
-        "salary": "12345",
-        "manager": "渣渣辉",
-        "edit": false
-      },
-      {
-        "id": "2",
-        "dept": "财务部门",
-        "name": "王哥",
-        "position": "经理",
-        "salary": "12345",
-        "manager": "渣渣辉",
-        "edit": false
-      },
-      {
-        "id": "3",
-        "dept": "财务部门",
-        "name": "拉哥",
-        "position": "开发",
-        "salary": "12345",
-        "manager": "渣渣辉",
-        "edit": false
-      }],
+    return {"tableData": [],
       searchIdContent: "",
       searchNameContent: ""
     }
+  },
+  mounted() {
+    axios.defaults.baseURL = "http://localhost:9090/api/employee";
+    axios.get("/").then(res => {
+      if (res.status == 200) {
+        let dept = res.data;
+        dept.forEach(e => e["edit"] = false);
+        this.tableData = dept;
+      }
+    })
   },
   methods: {
       navTo(routeName, params) {
@@ -74,9 +58,21 @@ export default {
       },
       search(searchBy) {
         if(searchBy === "id") {
-          this.tableData = this.tableData.filter(e => (e.id.indexOf(this.searchIdContent) != -1));
+          axios.get("/"+this.searchIdContent).then(res => {
+            if (res.status == 200) {
+              let dept = res.data;
+              dept["edit"] = false;
+              this.tableData = [dept];
+            }
+          });
         } else {
-          this.tableData = this.tableData.filter(e => (e.name.indexOf(this.searchNameContent) != -1));
+          axios.get("/search?key="+this.searchNameContent).then(res => {
+            if (res.status == 200) {
+              let dept = res.data;
+              dept.forEach(e => e["edit"] = false);
+              this.tableData = dept;
+            }
+          });
         }
       }
   }

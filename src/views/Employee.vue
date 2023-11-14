@@ -57,37 +57,24 @@
 </template>
 
 <script>
+import axios from "axios"
+axios.defaults.baseURL = "http://localhost:9090/api/employee";
 export default {
   name: "Home",
   data() {
-    return {"tableData": [
-      {
-        "id": "1",
-        "dept": "研发部门",
-        "name": "李哥",
-        "position": "开发",
-        "salary": "12345",
-        "edit": false
-      },
-      {
-        "id": "2",
-        "dept": "财务部门",
-        "name": "王哥",
-        "position": "经理",
-        "salary": "12345",
-        "edit": false
-      },
-      {
-        "id": "3",
-        "dept": "财务部门",
-        "name": "拉哥",
-        "position": "开发",
-        "salary": "12345",
-        "edit": false
-      }],
+    return {"tableData": [],
       multipleSelection: [],
       searchContent: ""
     }
+  },
+  mounted() {
+    axios.get("/").then(res => {
+      if (res.status == 200) {
+        let dept = res.data;
+        dept.forEach(e => e["edit"] = false);
+        this.tableData = dept;
+      }
+    })
   },
   methods: {
       navTo(routeName, params) {
@@ -106,18 +93,34 @@ export default {
       },
       saveDep(row) {
         row.edit = false;
+        axios.post("/", row);
       },
       deleteDep(index) {
-        this.tableData.splice(index,1);
+        let that = this;
+        const dep = this.tableData[index];
+        axios.delete("/" + dep.id).then(function() {
+          that.tableData.splice(index,1);
+        });
       },
       deleteMultiDep() {
-        this.tableData = this.tableData.filter(e => this.multipleSelection.indexOf(e) == -1);
+        let that = this;
+        const ids = this.multipleSelection.map(e => e.id);
+        axios.delete("/", {data: ids}).then(function() {
+          that.tableData = that.tableData.filter(e => ids.indexOf(e.id) == -1);
+        });
+        this.multipleSelection = [];
       },
       handleSelectionChange(val) {
         this.multipleSelection = val;
       },
       search() {
-        this.tableData = this.tableData.filter(e => (e.id.indexOf(this.searchContent) != -1) || (e.name.indexOf(this.searchContent) != -1) || e.manager.indexOf(this.searchContent) != -1);
+        axios.get("/search?key=" + this.searchContent).then(res => {
+            if (res.status == 200) {
+              let dept = res.data;
+              dept.forEach(e => e["edit"] = false);
+              this.tableData = dept;
+            }
+          });
       }
   }
 }

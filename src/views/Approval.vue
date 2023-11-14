@@ -12,28 +12,27 @@
           </el-date-picker>
           <el-button @click="search($event)">搜索</el-button>
         </el-row>
-        <el-table :data="tableData" @selection-change="handleSelectionChange">
-          <el-table-column prop="id" label="员工编号"></el-table-column>
+        <el-table :data="tableData">
+          <el-table-column prop="employeeID" label="员工编号"></el-table-column>
           <el-table-column prop="dept" label="所在部门"></el-table-column>
           <el-table-column prop="name" label="员工姓名"></el-table-column>
           <el-table-column prop="position" label="员工职位"></el-table-column>
-          <el-table-column prop="approvalOriginalSalary" label="员工原始薪资"></el-table-column>
-          <el-table-column prop="approvalSalaryIncrease" label="员工涨薪">
+          <el-table-column prop="salaryIncrease" label="员工涨薪">
             <template slot-scope="scope">
-              <span v-show="!scope.row.edit">{{scope.row.approvalSalaryIncrease}}</span>
-              <el-input v-show="scope.row.edit" v-model="scope.row.approvalSalaryIncrease"></el-input>
+              <span v-show="!scope.row.edit">{{scope.row.salaryIncrease}}</span>
+              <el-input v-show="scope.row.edit" v-model="scope.row.salaryIncrease"></el-input>
             </template>
           </el-table-column>
-          <el-table-column prop="approver" label="审批人">
+          <el-table-column prop="reviewer" label="审批人">
             <template slot-scope="scope">
-              <span v-show="!scope.row.edit">{{scope.row.approver}}</span>
-              <el-input v-show="scope.row.edit" v-model="scope.row.approver"></el-input>
+              <span v-show="!scope.row.edit">{{scope.row.reviewer}}</span>
+              <el-input v-show="scope.row.edit" v-model="scope.row.reviewer"></el-input>
             </template>
           </el-table-column>
-          <el-table-column prop="approvalReview" label="审批意见">
+          <el-table-column prop="comment" label="审批意见">
             <template slot-scope="scope">
-              <span v-show="!scope.row.edit">{{scope.row.approvalReview}}</span>
-              <el-input v-show="scope.row.edit" v-model="scope.row.approvalReview"></el-input>
+              <span v-show="!scope.row.edit">{{scope.row.comment}}</span>
+              <el-input v-show="scope.row.edit" v-model="scope.row.comment"></el-input>
             </template>
           </el-table-column>
           <el-table-column label="操作">
@@ -47,48 +46,32 @@
 </template>
 
 <script>
+import axios from "axios"
+axios.defaults.baseURL = "http://localhost:9090/api/employee";
 export default {
   name: "Home",
   data() {
-    return {"tableData": [
-      {
-        "id": this.$route.query.id,
-        "dept": this.$route.query.dept,
-        "name": this.$route.query.name,
-        "position": this.$route.query.position,
-        "approvalOriginalSalary": "12323",
-        "approvalSalaryIncrease": "1000",
-        "approver": "王哥",
-        "approvalReview": "我觉得行",
-        "edit": false
-      },
-      {
-        "id": this.$route.query.id,
-        "dept": this.$route.query.dept,
-        "name": this.$route.query.name,
-        "position": this.$route.query.position,
-        "approvalOriginalSalary": "13323",
-        "approvalSalaryIncrease": "1000",
-        "approver": "李哥",
-        "approvalReview": "我觉得也行",
-        "edit": false
-      },
-      {
-        "id": this.$route.query.id,
-        "dept": this.$route.query.dept,
-        "name": this.$route.query.name,
-        "position": this.$route.query.position,
-        "approvalOriginalSalary": "13323",
-        "approvalSalaryIncrease": "1000",
-        "approver": "超哥",
-        "approvalReview": "我觉得不行",
-        "edit": false
-      }],
+    return {"tableData": [],
       dateRange: ''
     }
   },
-  beforeMount() {
-   this.addDep()
+  mounted() {
+    const prevalue = {          
+      "employeeID": this.$route.query.id,
+      "dept": this.$route.query.dept,
+      "name": this.$route.query.name,
+      "position": this.$route.query.position,
+      "edit": false};
+    axios.get(this.$route.query.id+"/increaseSalary/").then(res => {
+      if (res.status == 200) {
+        let dept = res.data;
+        dept.forEach(e => {
+          Object.assign(e, prevalue);
+        });
+        this.tableData = dept;
+        this.addDep();
+      }
+    });
   },
   methods: {
       navTo(routeName) {
@@ -96,23 +79,39 @@ export default {
       },
       addDep() {
         this.tableData.push({
-          "id": this.$route.query.id,
+          "employeeID": this.$route.query.id,
           "dept": this.$route.query.dept,
           "name": this.$route.query.name,
           "position": this.$route.query.position,
-          "approvalOriginalSalary": this.$route.query.salary,
-          "approvalSalaryIncrease": "",
-          "approver": "",
-          "approvalReview": "",
+          "salaryIncrease": "",
+          "reviewer": "",
+          "comment": "",
           "edit": true
         });
       },
       saveDep(row) {
         row.edit = false;
+        axios.post(this.$route.query.id+"/increaseSalary/", row);
       },
       search() {
-        console.log(this.dateRange[0]);
-        console.log(this.dateRange[1]);
+        if (!this.dateRange[0]){
+          return;
+        }
+        const prevalue = {          
+          "employeeID": this.$route.query.id,
+          "dept": this.$route.query.dept,
+          "name": this.$route.query.name,
+          "position": this.$route.query.position,
+          "edit": false};
+        axios.get(this.$route.query.id+"/increaseSalary/search?startDate="+this.dateRange[0].toJSON()+"&endDate="+this.dateRange[1].toJSON()).then(res => {
+          if (res.status == 200) {
+            let dept = res.data;
+            dept.forEach(e => {
+              Object.assign(e, prevalue);
+            });
+            this.tableData = dept;
+          }
+        });
       }
   }
 }
