@@ -33,7 +33,7 @@
           <el-table-column prop="checkDate" label="评价时间"></el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
-              <el-button type="primary" @click="saveDep(scope.row)" v-show="scope.row.edit">确认考核</el-button>
+              <el-button type="primary" @click="save(scope.row, 'kpi')" v-show="scope.row.edit">确认考核</el-button>
             </template>
           </el-table-column>
           
@@ -44,51 +44,16 @@
 
 <script>
 import axios from "axios"
+import apiUtils from "../utils/apiUtils"
 export default {
-  name: "Home",
+  name: "KPI",
   data() {
-    return {"tableData": []
-    }
+    return {"tableData": []}
   },
   mounted() {
-    axios.defaults.baseURL = "http://localhost:9090/api/employeeKPI";
-    const prevalue = {          
-      "id": this.$route.query.id,
-      "dept": this.$route.query.dept,
-      "name": this.$route.query.name,
-      "position": this.$route.query.position,
-      "edit": false};
-    axios.get("/"+this.$route.query.id).then(res => {
-      if (res.status == 200) {
-        let dept = res.data;
-        dept.forEach(e => {
-          Object.assign(e, prevalue);
-        });
-        this.tableData = dept;
-        this.addDep();
-      }
-    });
+    axios.defaults.baseURL = "http://localhost:8080/api/employeeKPI";
+    this.get("kpi");
   },
-  methods: {
-      navTo(routeName) {
-          this.$router.push({name: routeName});
-      },
-      addDep() {
-        this.tableData.push({
-          "id": this.$route.query.id,
-          "dept": this.$route.query.dept,
-          "name": this.$route.query.name,
-          "position": this.$route.query.position,
-          "kpi": "",
-          "leader": this.$route.query.manager,
-          "comments": "",
-          "edit": true
-        });
-      },
-      saveDep(row) {
-        row.edit = false;
-        axios.post("/" + this.$route.query.id, row);
-      }
-  }
+  methods: apiUtils.methods
 }
 </script>

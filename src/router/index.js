@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Department from '../views/Department.vue'
 import Employee from '../views/Employee.vue'
-import Approval from '../views/Approval.vue'
+import IncreaseSalary from '../views/IncreaseSalary.vue'
 import KPIEmployee from '../views/KPIEmployee.vue'
 import KPI from '../views/KPI.vue'
 import DataAnalysis from '../views/DataAnalysis.vue'
@@ -27,9 +27,9 @@ const routes = [
     component: Employee
   },
   {
-    path: '/approval',
-    name: 'approval',
-    component: Approval
+    path: '/increaseSalary',
+    name: 'increaseSalary',
+    component: IncreaseSalary
   },
   {
     path: '/kpiemployee',
