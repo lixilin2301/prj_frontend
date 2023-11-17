@@ -153,6 +153,24 @@ export default {
           this.tableData = dept;
         }
       });
+    },
+    analyze() {
+      let inputData = this.tableData.split('\n');
+      inputData = inputData.map(e => {
+        const xy = e.split(',');
+        return {"years": xy[0], "salary": xy[1]};
+      })
+      axios.post("/import", inputData).then(res => {
+        this.varA = res.data[0];
+        this.varB = res.data[1];
+        this.varMSE = res.data[2];
+      });
+      console.log(inputData);
+    },
+    compute() {
+      if (this.varA && this.varB && this.varX) {
+        this.varY = this.varA * this.varX + this.varY;
+      }
     }
   }
 }
