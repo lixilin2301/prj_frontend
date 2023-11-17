@@ -35,6 +35,7 @@
               <el-input v-show="scope.row.edit" v-model="scope.row.comment"></el-input>
             </template>
           </el-table-column>
+          <el-table-column prop="datetime" label="时间"></el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
               <el-button type="primary" @click="save(scope.row, 'increaseSalary')" v-show="scope.row.edit">确认申请</el-button>
